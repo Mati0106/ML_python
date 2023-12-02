@@ -1,19 +1,19 @@
 # Przyklad opracowany na podstawie https://machinelearningmastery.com/develop-first-xgboost-model-python-scikit-learn/
-from xgboost import XGBRegressor
+from xgboost import XGBClassifier
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
 import pandas as pd
-from sklearn.metrics import mean_squared_error
+import shap
 
-dataset = pd.read_csv('diabetes.csv')
 dataset = pd.read_csv('lecture_two/diabetes.csv')
-X = dataset.iloc[:,0:7]
-Y = dataset.iloc[:,7]
+X = dataset.iloc[:,0:8]
+Y = dataset.iloc[:,8]
 
 seed = 7
 test_size = 0.33
 X_train, X_test, y_train, y_test = train_test_split(X, Y, test_size=test_size, random_state=seed)
 
-model = XGBRegressor()
+model = XGBClassifier()
 model.fit(X_train, y_train)
 
 print(model)
@@ -24,5 +24,11 @@ predictions = [round(value) for value in y_pred]
 
 
 # evaluate predictions
-mse = mean_squared_error(y_test, predictions)
-print("MSE: {0}".format(mse))
+accuracy = accuracy_score(y_test, predictions)
+print("Accuracy: %.2f%%" % (accuracy * 100.0))
+
+
+explainer = shap.TreeExplainer(model)
+shap_values = explainer.shap_values(X_test)
+
+shap.summary_plot(shap_values, X_test)
